@@ -54,7 +54,7 @@ def learn(F, t, l):
 
 def error(W, t, x, ind):
     F = matrix_F(x, ind)
-    return (1 / 2) * sum((W.dot(F.T)) - t) ** 2
+    return (1 / 2) * sum((W.dot(F.T) - t) ** 2)
 
 
 def toFixed(numObj, digits=0):
@@ -75,12 +75,7 @@ def get_names(functions_names, min_errors_sets, l_lst):
     names = []
     for i in range(10):
         W = learn(matrix_F(x_train, min_errors_sets[i]), t_train, l_lst[i])
-        str = f"y = {toFixed(W[0], 2)}"
-        for j in range(1, len(min_errors_sets[i]) + 1):
-            if W[j] > 0:
-                str += f" + {toFixed(W[j], 2)}{functions_names[min_errors_sets[i][j - 1]]}"
-            else:
-                str += f" - {toFixed(abs(W[j]), 2)}{functions_names[min_errors_sets[i][j - 1]]}"
+        str = get_name(functions_names, min_errors_sets[i], W)
         names.append(str)
     return np.array(names)
 
@@ -107,11 +102,11 @@ for i in chosen_sets:
         W = learn(F, t_train, l)
         error_valid.append(error(W, t_valid, x_valid, i))
         error_test.append(error(W, t_test, x_test, i))
-min_error_valid = np.array(sorted(error_valid)[:10])
-min_errors_index = [error_valid.index(i) for i in min_error_valid]
+min_errors_index = np.argsort(error_valid)[:10]
+min_error_valid = np.asarray(error_valid)[min_errors_index]
+min_error_test = np.asarray(error_test)[min_errors_index]
 l_lst = np.array([chosen_lamb[i // 5][i % 5] for i in min_errors_index])
 min_errors_sets = [chosen_sets[i // 5] for i in min_errors_index]
-min_error_test = np.array([error_test[i] for i in min_errors_index])
 
 create_graphics(x, z, t, 'BEST MODEL', min_error_test[0], l_lst[0], min_errors_sets[0], name="ML_HW3_best_model",
                 path2save="C:/Users/26067/PycharmProjects/ML_HW3")
@@ -119,6 +114,6 @@ create_graphics(x, z, t, 'BEST MODEL', min_error_test[0], l_lst[0], min_errors_s
 visualisation = Visualization()
 visualisation.models_error_scatter_plot(min_error_valid, min_error_test,
                                         get_names(func_names, min_errors_sets, l_lst), l_lst,
-                                        'title', show=True, save=True,
+                                        '10 best models', show=True, save=True,
                                         name="ML_HW3_10_models",
                                         path2save="C:/Users/26067/PycharmProjects/ML_HW3")
